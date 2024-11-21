@@ -36,6 +36,10 @@ function searchDirectory($dir, $searchQuery, $excludedExtensions, $excludedFiles
 
         // Check if it's a directory
         if (is_dir($filePath)) {
+            // Include directories that match the search query
+            if (stripos($file, $searchQuery) !== false) {
+                $result[] = $filePath;
+            }
             // Recurse into subdirectories
             $result = array_merge($result, searchDirectory($filePath, $searchQuery, $excludedExtensions, $excludedFiles));
         } else {
@@ -75,7 +79,7 @@ if ($searchQuery) {
     }, $files);
 }
 
- // Upload functionality
+// Upload functionality
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fileUpload'])) {
     $uploadDir = isset($_POST['folder']) ? $_POST['folder'] : $directory;
     $uploadFile = $uploadDir . '/' . basename($_FILES['fileUpload']['name']);
@@ -150,57 +154,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fileUpload'])) {
         a:hover {
             color: #007BFF;
         }
-            h1 {
-        font-size: 2em;
-        color: white; /* Set the color of the header text to white */
-        text-align: center;
-        margin-top: 20px;
-    }
 
-    h1 a {
-        color: white; /* Set the color of the link inside the header to white */
-        text-decoration: none; /* Remove underline */
-    }
+        h1 {
+            font-size: 2em;
+            color: white; /* Set the color of the header text to white */
+            text-align: center;
+            margin-top: 20px;
+        }
 
-    h1 a:hover {
-        color: #ccc; /* Slightly lighter color on hover */
-    }
+        h1 a {
+            color: white; /* Set the color of the link inside the header to white */
+            text-decoration: none; /* Remove underline */
+        }
+
+        h1 a:hover {
+            color: #ccc; /* Slightly lighter color on hover */
+        }
     </style>
 </head>
 <body>
 
 <header>
-   
-    <h1> <a href="index.php">Web File Manager</a></h1>
+    <h1><a href="index.php">Web File Manager</a></h1>
 </header>
 
 <div class="container">
-    <!-- Search Form --><br><br>
+    <!-- Search Form -->
     <form method="get" action="">
         <input type="text" name="search" value="<?= htmlspecialchars($searchQuery) ?>" placeholder="Search files..." />
         <button type="submit">Search</button>
     </form>
-
-    <!-- Upload Form 
-    <h2>Upload File</h2>
-    <form method="POST" enctype="multipart/form-data">
-        <label for="fileUpload">Choose file to upload:</label>
-        <input type="file" name="fileUpload" id="fileUpload" required><br><br>
-
-        <label for="folder">Choose destination folder:</label>
-        <select name="folder" id="folder">
-            <option value="<?= htmlspecialchars($directory) ?>" selected>Current Folder (<?= htmlspecialchars($directory) ?>)</option>
-            <?php
-            // List directories for the folder selection
-            $dirs = array_filter(glob($directory . '/*'), 'is_dir');
-            foreach ($dirs as $dir) {
-                echo "<option value='" . htmlspecialchars($dir) . "'>" . basename($dir) . "</option>";
-            }
-            ?>
-        </select><br><br>
-
-        <button type="submit">Upload File</button>
-    </form> -->
 
     <?php
     // If there are search results
@@ -208,7 +191,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fileUpload'])) {
         echo "<h2>Search Results for: " . htmlspecialchars($searchQuery) . "</h2>";
         foreach ($searchResults as $filePath) {
             $fileName = basename($filePath);
-            echo "<a href='$filePath'>$fileName</a><br>";
+            // Check if it's a directory
+            if (is_dir($filePath)) {
+                echo "<a href='?dir=" . urlencode($filePath) . "'>📁 $fileName</a><br>";
+            } else {
+                echo "<a href='$filePath'>$fileName</a><br>";
+            }
         }
     } elseif ($searchQuery) {
         // No results found for the search query
@@ -238,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['fileUpload'])) {
 </div>
 
 <footer>
-    <p>&copy; <?= date("Y") ?>Web File Manager</p>
+    <p>&copy; <?= date("Y") ?> Web File Manager</p>
 </footer>
 
 </body>
